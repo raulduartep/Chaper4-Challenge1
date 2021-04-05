@@ -28,7 +28,7 @@ describe("Create User", () => {
     });
   });
 
-  it("Should not be able to create a new user with existent name", () => {
+  it("Should not be able to create a new user with existent email", () => {
     const user: ICreateUserDTO = {
       email: "test@test.com",
       name: "Teste da Silva",
