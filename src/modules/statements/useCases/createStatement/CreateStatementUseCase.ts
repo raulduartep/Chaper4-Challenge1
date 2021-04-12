@@ -2,6 +2,7 @@ import { inject, injectable } from "tsyringe";
 
 import { IUsersRepository } from "../../../users/repositories/IUsersRepository";
 import { IStatementsRepository } from "../../repositories/IStatementsRepository";
+import { StatementTransform } from "../../transformers/StatementTransform";
 import { CreateStatementError } from "./CreateStatementError";
 import { ICreateStatementDTO } from "./ICreateStatementDTO";
 
@@ -39,6 +40,6 @@ export class CreateStatementUseCase {
       description,
     });
 
-    return statementOperation;
+    return StatementTransform(statementOperation);
   }
 }

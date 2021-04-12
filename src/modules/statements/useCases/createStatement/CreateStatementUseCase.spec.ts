@@ -2,12 +2,14 @@ import { hash } from "bcryptjs";
 import { rejects } from "node:assert";
 import { InMemoryUsersRepository } from "../../../users/repositories/in-memory/InMemoryUsersRepository";
 import { InMemoryStatementsRepository } from "../../repositories/in-memory/InMemoryStatementsRepository";
+import { InMemoryTransfersRepository } from "../../repositories/in-memory/InMemoryTransfersRepository";
 import { CreateStatementError } from "./CreateStatementError";
 import { CreateStatementUseCase } from "./CreateStatementUseCase";
 import { ICreateStatementDTO } from "./ICreateStatementDTO";
 
 let inMemoryStatementRepository: InMemoryStatementsRepository;
 let inMemoryUsersRepository: InMemoryUsersRepository;
+let inMemoruTransferRepository: InMemoryTransfersRepository;
 let createStatementUseCase: CreateStatementUseCase;
 
 enum OperationType {
@@ -17,7 +19,10 @@ enum OperationType {
 
 describe("Create Statement", () => {
   beforeEach(() => {
-    inMemoryStatementRepository = new InMemoryStatementsRepository();
+    inMemoruTransferRepository = new InMemoryTransfersRepository();
+    inMemoryStatementRepository = new InMemoryStatementsRepository(
+      inMemoruTransferRepository
+    );
     inMemoryUsersRepository = new InMemoryUsersRepository();
     createStatementUseCase = new CreateStatementUseCase(
       inMemoryUsersRepository,

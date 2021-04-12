@@ -11,10 +11,13 @@ import { UsersRepository } from "../../../users/repositories/UsersRepository";
 import { User } from "../../../users/entities/User";
 import { hash } from "bcryptjs";
 import { StatementsRepository } from "../../repositories/StatementsRepository";
+import { CreateTransferUseCase } from "../createTransfer/CreateTransferUseCase";
+import { container } from "tsyringe";
 
 let connection: Connection;
 let token: string;
-let user: User;
+let receiverUser: User;
+let senderUser: User;
 
 enum OperationType {
   DEPOSIT = "deposit",
@@ -28,16 +31,22 @@ describe("Get balance", () => {
 
     const usersRepository = new UsersRepository();
 
-    user = await usersRepository.create({
+    receiverUser = await usersRepository.create({
       email: "test@test.com.br",
+      name: "Test",
+      password: await hash("test", 8),
+    });
+
+    senderUser = await usersRepository.create({
+      email: "test2@test.com.br",
       name: "Test",
       password: await hash("test", 8),
     });
 
     const { secret, expiresIn } = authConfig.jwt;
 
-    token = sign({ user }, secret, {
-      subject: user.id,
+    token = sign({ senderUser }, secret, {
+      subject: senderUser.id,
       expiresIn,
     });
   });
@@ -54,21 +63,30 @@ describe("Get balance", () => {
       amount: 100,
       description: "Test 1",
       type: "deposit" as OperationType,
-      user_id: user.id || "",
+      user_id: senderUser.id || "",
     });
 
     const statement2 = await statementsRepository.create({
       amount: 200,
       description: "Test 2",
       type: "deposit" as OperationType,
-      user_id: user.id || "",
+      user_id: senderUser.id || "",
     });
 
     const statement3 = await statementsRepository.create({
       amount: 50,
       description: "Test 3",
       type: "withdraw" as OperationType,
-      user_id: user.id || "",
+      user_id: senderUser.id || "",
+    });
+
+    const createTransferUseCase = container.resolve(CreateTransferUseCase);
+
+    const transfer = await createTransferUseCase.execute({
+      amount: 100,
+      description: "Test Transfer",
+      receiver_id: receiverUser.id || "",
+      sender_id: senderUser.id || "",
     });
 
     const response = await request(app)
@@ -84,11 +102,16 @@ describe("Get balance", () => {
         ...res,
         created_at: new Date(res.created_at),
         updated_at: new Date(res.updated_at),
-        user_id: user.id,
+        user_id: senderUser.id,
       }))
-    ).toEqual(expect.arrayContaining([statement1, statement2, statement3]));
+    ).toEqual(
+      expect.arrayContaining([statement1, statement2, statement3, transfer])
+    );
     expect(response.body.balance).toBe(
-      statement1.amount + statement2.amount - statement3.amount
+      statement1.amount +
+        statement2.amount -
+        statement3.amount -
+        transfer.amount
     );
   });
 

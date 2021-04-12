@@ -1,8 +1,10 @@
 import { inject, injectable } from "tsyringe";
 
 import { IUsersRepository } from "../../../users/repositories/IUsersRepository";
+import { TransferTransform } from "../../transformers/TransferTransform";
 import { IStatementsRepository } from "../../repositories/IStatementsRepository";
 import { GetStatementOperationError } from "./GetStatementOperationError";
+import { StatementTransform } from "../../transformers/StatementTransform";
 
 interface IRequest {
   user_id: string;
@@ -19,7 +21,10 @@ export class GetStatementOperationUseCase {
     private statementsRepository: IStatementsRepository
   ) {}
 
-  async execute({ user_id, statement_id }: IRequest) {
+  async execute({
+    user_id,
+    statement_id,
+  }: IRequest): Promise<StatementTransform | TransferTransform> {
     const user = await this.usersRepository.findById(user_id);
 
     if (!user) {
@@ -34,6 +39,10 @@ export class GetStatementOperationUseCase {
       throw new GetStatementOperationError.StatementNotFound();
     }
 
-    return statementOperation;
+    if (statementOperation.transfer) {
+      return TransferTransform(statementOperation);
+    }
+
+    return StatementTransform(statementOperation);
   }
 }

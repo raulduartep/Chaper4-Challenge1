@@ -42,7 +42,7 @@ export class transferTable1618079327733 implements MigrationInterface {
           {
             name: "FKReceiverUser",
             columnNames: ["receiver_id"],
-            referencedTableName: "transfers",
+            referencedTableName: "users",
             referencedColumnNames: ["id"],
             onUpdate: "CASCADE",
             onDelete: "CASCADE",

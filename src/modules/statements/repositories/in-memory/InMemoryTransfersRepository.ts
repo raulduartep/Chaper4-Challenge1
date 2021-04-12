@@ -3,7 +3,7 @@ import { CreateTransferDTO } from "../../useCases/createTransfer/CreateTransferD
 import { ITransferRepository } from "../ITransfersRepository";
 
 export class InMemoryTransfersRepository implements ITransferRepository {
-  private transfers: Transfer[];
+  private transfers: Transfer[] = [];
 
   async create({
     receiver_id,

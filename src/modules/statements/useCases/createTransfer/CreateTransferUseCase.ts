@@ -3,6 +3,7 @@ import { IUsersRepository } from "../../../users/repositories/IUsersRepository";
 import { Statement } from "../../entities/Statement";
 import { IStatementsRepository } from "../../repositories/IStatementsRepository";
 import { ITransferRepository } from "../../repositories/ITransfersRepository";
+import { TransferTransform } from "../../transformers/TransferTransform";
 import { CreateTransferError } from "./CreateTransferError";
 
 type IRequest = {
@@ -23,7 +24,7 @@ export class CreateTransferUseCase {
     @inject("UsersRepository")
     private usersRepository: IUsersRepository,
 
-    @inject("StatementRepository")
+    @inject("StatementsRepository")
     private statementsRepository: IStatementsRepository,
 
     @inject("TransfersRepository")
@@ -35,7 +36,7 @@ export class CreateTransferUseCase {
     receiver_id,
     amount,
     description,
-  }: IRequest): Promise<Statement> {
+  }: IRequest): Promise<TransferTransform> {
     if (sender_id === receiver_id) {
       throw new CreateTransferError.SenderUserEqualtoReceiverUser();
     }
@@ -73,6 +74,8 @@ export class CreateTransferUseCase {
       transfer_id: transfer.id,
     });
 
+    statementSender.transfer = transfer;
+
     await this.statementsRepository.create({
       amount,
       description,
@@ -81,6 +84,6 @@ export class CreateTransferUseCase {
       transfer_id: transfer.id,
     });
 
-    return statementSender;
+    return TransferTransform(statementSender);
   }
 }

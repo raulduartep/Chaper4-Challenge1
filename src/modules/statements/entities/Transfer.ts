@@ -7,6 +7,7 @@ import {
   OneToMany,
   PrimaryColumn,
 } from "typeorm";
+import { v4 as uuid } from "uuid";
 import { User } from "../../users/entities/User";
 import { Statement } from "./Statement";
 
@@ -37,4 +38,10 @@ export class Transfer {
 
   @CreateDateColumn()
   updated_at: Date;
+
+  constructor() {
+    if (!this.id) {
+      this.id = uuid();
+    }
+  }
 }

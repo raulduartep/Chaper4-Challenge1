@@ -28,7 +28,9 @@ export class StatementsRepository implements IStatementsRepository {
       transfer_id,
     });
 
-    return this.repository.save(statement);
+    await this.repository.save(statement);
+
+    return statement;
   }
 
   async findStatementOperation({
@@ -37,6 +39,7 @@ export class StatementsRepository implements IStatementsRepository {
   }: IGetStatementOperationDTO): Promise<Statement | undefined> {
     return this.repository.findOne(statement_id, {
       where: { user_id },
+      relations: ["transfer"],
     });
   }
 
@@ -48,10 +51,8 @@ export class StatementsRepository implements IStatementsRepository {
   > {
     const statement = await this.repository.find({
       where: { user_id },
-      relations: ["transfers"],
+      relations: ["transfer"],
     });
-
-    console.log(statement);
 
     const balance = statement.reduce((acc, operation) => {
       if (operation.type === "deposit") {
